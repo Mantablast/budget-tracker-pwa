@@ -8,7 +8,7 @@ const request = indexedDB.open("budget-tracker", 1);
 request.onupgradeneeded = function (event) {
   // save a reference to the database
   const db = event.target.result;
-  // create an object store (table) called `new_pizza`, set it to have an auto incrementing primary key of sorts
+  // create an object store (table) called `budget_store`
   db.createObjectStore("budget_store", { autoIncrement: true });
 };
 
@@ -23,19 +23,6 @@ request.onsuccess = function (event) {
   }
 };
 
-//iif error
-request.onerror = function (event) {
-  console.log(event.target.errorCode);
-};
-
-// If no internet, save to local db to run when there is internet
-function saveRecord(record) {
-  // new transaction with the database with updatable permissions
-  const transaction = db.transaction(["budget_store"], "readwrite");
-  const budgetObjectStore = transaction.objectStore("budget_store");
-  // add to array
-  budgetObjectStore.add(record);
-}
 //pseudo
 //once the database version transactions has been compared with the online version, if they differ,
 //it should trigger an update function as soon as possible so the web page shows the most recent budget content
@@ -43,22 +30,25 @@ function updateDb() {
   //open transaction
   let transaction = db.transaction(["budget_store"], "readwrite");
   // access objectstore again
-  const budgetObjectStore = transaction.objectStore("budget_store");
-  // gather previous unloaded transactions
-  const gatherTransacts = budgetObjectStore.getAll();
+  const storeObject = transaction.objectStore("budget_store");
+  // gather transactions and set to 
+  const gatherTransacts = storeObject.gatherTransacts();
+
+
+
   //if success,
-  getAll.onsuccess = function () {
+  gatherTransacts.onsuccess = function () {
     // if data, send to server first
     if (gatherTransacts.result.length > 0) {
       fetch("/api/transaction", {
         method: "POST",
-        body: JSON.stringify(getAll.result),
+        body: JSON.stringify(gatherTransacts.result),
         headers: {
           Accept: "application/json, text/plain, */*",
           "Content-Type": "application/json",
         },
       })
-        //call api
+        //api call
 
         .then((response) => response.json())
         .then((serverResponse) => {
@@ -69,9 +59,9 @@ function updateDb() {
           // open one more transaction
           const transaction = db.transaction(["budget_store"], "readwrite");
           // access the object store
-          const budgetObjectStore = transaction.objectStore("budget_store");
+          const storeObject = transaction.objectStore("budget_store");
           // clear everythin
-          budgetObjectStore.clear();
+          storeObject.clear();
           alert("Success");
         })
         .catch((err) => {
@@ -79,4 +69,18 @@ function updateDb() {
         });
     }
   };
+}
+
+//iif error
+request.onerror = function (event) {
+  console.log(event.target.errorCode);
+};
+
+// If no internet, save to local db to run when there is internet
+function saveBudget(transact) {
+  // new transaction with the database with updatable permissions
+  const transaction = db.transaction(["budget_store"], "readwrite");
+  const budgetObjectStore = transaction.objectStore("budget_store");
+  // add to array
+  budgetObjectStore.add(transact);
 }
