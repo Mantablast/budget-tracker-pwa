@@ -2,7 +2,7 @@
 
 ## Description
 This app allows a user to update their finance tracking over time and will locally save budget data if the app goes offline.
-[img]('./public/images/BudgetScreenshot.png')
+![Screenshot](./public/images/BudgetScreenshot.png)
 
 Project by: Aimee J  
 Main Github: [MissAimeeJay](https://github.com/MissAimeeJay)
