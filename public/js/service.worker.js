@@ -1,5 +1,6 @@
 const FILES_TO_CACHE = [
     //adding everything public
+    '/',
     '/index.html',
     '/js/index.js',
     '/js/idb.js',
@@ -12,8 +13,8 @@ const FILES_TO_CACHE = [
     '/icons/icon-152x152.png',
     '/icons/icon-192x192.png',
     '/icons/icon-384x384.png',
-    '/icons/icon-512x512.png',
-    '/'
+    '/icons/icon-512x512.png'
+    
 ];
 
 const APP_PREFIX = 'BudgetTracker-';
@@ -31,7 +32,7 @@ self.addEventListener('install', function (e) {
     )
 });
 
-//activate
+//fire event
 self.addEventListener('activate', function (e) {
     e.waitUntil(
         caches.keys().then(function (keyList) {
@@ -51,24 +52,20 @@ self.addEventListener('activate', function (e) {
     )
 });
 
-// retrieving info lesson 4
+// retrieving info lesson 4.  make it work offline
 self.addEventListener('fetch', function (e) {
     console.log('fetch request : ' + e.request.url)
     e.respondWith(
-        caches.match(e.request).then(function (request) {
-            if (request) {
+      caches.match(e.request).then(function (request) {
+        if (request) { // if cache is available, respond with the cache
+          console.log('responding with cache : ' + e.request.url)
+          return request
+        } else {       // if there are no cache, try fetching request
+          console.log('file is not cached, fetching : ' + e.request.url)
+          return fetch(e.request)
+        }
 
-                // if present respond
-                console.log('responding with cache : ' + e.request.url)
-                //show cache response
-                return request
-            } else {
-
-                // if none log result
-                console.log('file is not cached, fetching : ' + e.request.url)
-
-                return fetch(e.request)
-            }
-        })
+      })
     )
-});
+  })
+
